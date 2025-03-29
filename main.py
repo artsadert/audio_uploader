@@ -2,7 +2,7 @@ from router import auth_router, audio_router, users_router
 from fastapi import FastAPI
 from dao import database
 
-#database.drop_table()
+#database.update_table()
 
 
 app = FastAPI()

@@ -13,10 +13,10 @@ loading_dotenv.load()
 engine = create_engine(str(getenv("PGLINK")))
 
 
-def create_user(psuid: str, email: str | None, login: str, name: str | None, lname: str | None, sex: str | None):
+def create_user(id: int, email: str | None, login: str, name: str | None, lname: str | None, sex: str | None):
     user_id = None
     with Session(engine) as session:
-        user = models.User(id=psuid, email=email, login=login, name=name, lname=lname, sex=sex)
+        user = models.User(id=id, email=email, login=login, name=name, lname=lname, sex=sex)
         session.add(user)
 
         session.commit()
@@ -28,23 +28,23 @@ def create_user(psuid: str, email: str | None, login: str, name: str | None, lna
     return user_id
 
 
-def delete_user(psuid: str):
+def delete_user(id: int):
     with Session(engine) as session:
-        session.query(models.User).filter(models.User.id == psuid).delete()
+        session.query(models.User).filter(models.User.id == id).delete()
         session.commit()
 
 
-def get_user_info(psuid: str):
+def get_user_info(id: int):
     user = None
     with Session(engine) as session:
-        user = session.query(models.User).filter(models.User.id == psuid).first()
+        user = session.query(models.User).filter(models.User.id == id).first()
 
     if not user:
         raise ValueError
 
     return user
 
-def update_user_info(id: str | None, email: str | None, login: str, name: str | None, lname: str | None, sex: str | None):
+def update_user_info(id: int | None, email: str | None, login: str, name: str | None, lname: str | None, sex: str | None):
     with Session(engine) as session:
         stmt = select(models.User).where(models.User.id == id)
         user = session.scalars(stmt).one()
@@ -58,20 +58,20 @@ def update_user_info(id: str | None, email: str | None, login: str, name: str | 
         session.commit()
 
 
-def check_is_user_existing(psuid: str):
+def check_is_user_existing(id: int):
     user = None
     with Session(engine) as session:
-        stmt = select(models.User).where(models.User.id == psuid)
+        stmt = select(models.User).where(models.User.id == id)
         user = session.scalars(stmt).one_or_none()
 
     return user is not None
 
 
 
-def create_audio(filename: str, file: bytes, psuid: int):
+def create_audio(filename: str, file: bytes, id: int):
     image_id = None
     with Session(engine) as session:
-        image = models.Audio(filename=filename, user_id=psuid) 
+        image = models.Audio(filename=filename, user_id=id) 
         session.add(image)
 
         session.commit()
@@ -86,19 +86,19 @@ def create_audio(filename: str, file: bytes, psuid: int):
     with open(f"./files/{image_id}", 'wb') as f:
         f.write(file)
 
-def get_list_audio(psuid: str) -> list[dict[str, str]]:
+def get_list_audio(id: int) -> list[dict[str, str]]:
     tracks = []
     with Session(engine) as session:
-        stmt = select(models.Audio).where(models.Audio.user_id == psuid)
+        stmt = select(models.Audio).where(models.Audio.user_id == id)
         for track in session.scalars(stmt):
             tracks.append({"filename": track.filename, "filepath": track.url_link_id})
 
     return tracks
 
-def is_super_user(psuid: str):
+def is_super_user(id: int):
     superuser = None
     with Session(engine) as session:
-        stmt = select(models.SuperUsers).where(models.SuperUsers.user_id == psuid)
+        stmt = select(models.SuperUsers).where(models.SuperUsers.user_id == id)
         superuser = session.scalars(stmt).one_or_none()
 
     return superuser is not None

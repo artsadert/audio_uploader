@@ -20,13 +20,13 @@ async def upload_track(file: Annotated[bytes | None, File()], filename: str, oau
 
     # Todo verify that user 
     result = await yandex_oauth.get_user_info(oauth_token)
-    if not database.check_is_user_existing(result.psuid):
+    if not database.check_is_user_existing(int(result.id)):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f'File {filename} has unsupported extension type',
         )
 
-    database.create_audio(filename, file, result.psuid)
+    database.create_audio(filename, file, int(result.id))
 
 
 
@@ -34,19 +34,20 @@ async def upload_track(file: Annotated[bytes | None, File()], filename: str, oau
 
     
 @router.get("/audio/user")
-async def get_all_user_audio(psuid: str, oauth_token: str):
-    if not database.check_is_user_existing(psuid):
+async def get_all_user_audio(id: int, oauth_token: str):
+    if not database.check_is_user_existing(id):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f'User not found',
         )
 
     result = await yandex_oauth.get_user_info(oauth_token)
-    if psuid != result.psuid and not database.is_super_user(result.psuid):
+    print(id, result.id, id == result.id, database.is_super_user(int(result.id)))
+    if id != int(result.id) and not database.is_super_user(int(result.id)):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f'Access denied',
         )
     
     
-    return {"tracks": database.get_list_audio(psuid)}
+    return {"tracks": database.get_list_audio(id)}

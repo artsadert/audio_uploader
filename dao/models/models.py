@@ -10,19 +10,12 @@ class Base(DeclarativeBase):
 class User(Base):
     __tablename__ = "user"
 
-    id: Mapped[str] = mapped_column(primary_key=True) 
+    id: Mapped[int] = mapped_column(primary_key=True) 
     email: Mapped[Optional[str]]
     login: Mapped[str]
     name: Mapped[Optional[str]]
     lname: Mapped[Optional[str]]
     sex: Mapped[Optional[str]]
-    """
-    images: Mapped[list["Image"]] = relationship(
-        "Image",
-        back_populates="user",
-        cascade="all, delete"
-    )
-    """
 
     def __repr__(self) -> str:
         return f"User(id={self.id}, email={self.email}, login={self.login}, name={self.name}, lname={self.lname}, sex={self.sex})"
@@ -33,13 +26,7 @@ class Audio(Base):
 
     url_link_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     filename: Mapped[str] = mapped_column(String(200))
-    user_id: Mapped[str] = mapped_column(ForeignKey("user.id"))
-    """
-    user: Mapped[User] = relationship(
-        "User",
-        back_populates="images"
-    )
-    """
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete='CASCADE'))
 
     def __repr__(self) -> str:
         return f"Image(url_link_id={self.url_link_id}, filename={self.filename}, user_id={self.user_id})"
@@ -48,5 +35,5 @@ class Audio(Base):
 class SuperUsers(Base):
     __tablename__ = "superusers"
 
-    user_id: Mapped[str] = mapped_column(ForeignKey("user.id"), primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete='CASCADE'), primary_key=True)
 

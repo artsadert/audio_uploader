@@ -1,5 +1,5 @@
 from sqlalchemy import ForeignKey, String
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from typing import Optional
 
@@ -10,11 +10,11 @@ class Base(DeclarativeBase):
 class User(Base):
     __tablename__ = "user"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True) 
-    email: Mapped[str]
+    id: Mapped[str] = mapped_column(primary_key=True) 
+    email: Mapped[Optional[str]]
     login: Mapped[str]
-    name: Mapped[str]
-    lname: Mapped[str]
+    name: Mapped[Optional[str]]
+    lname: Mapped[Optional[str]]
     sex: Mapped[Optional[str]]
     """
     images: Mapped[list["Image"]] = relationship(
@@ -28,12 +28,12 @@ class User(Base):
         return f"User(id={self.id}, email={self.email}, login={self.login}, name={self.name}, lname={self.lname}, sex={self.sex})"
 
 
-class Image(Base):
-    __tablename__ = "image"
+class Audio(Base):
+    __tablename__ = "audio"
 
     url_link_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     filename: Mapped[str] = mapped_column(String(200))
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    user_id: Mapped[str] = mapped_column(ForeignKey("user.id"))
     """
     user: Mapped[User] = relationship(
         "User",
@@ -48,5 +48,5 @@ class Image(Base):
 class SuperUsers(Base):
     __tablename__ = "superusers"
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
+    user_id: Mapped[str] = mapped_column(ForeignKey("user.id"), primary_key=True)
 

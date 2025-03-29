@@ -1,10 +1,13 @@
-from auth import auth_router
-from audio_upload import audio_upload_router 
+from router import auth_router, audio_router, users_router
 from fastapi import FastAPI
+from dao import database
+
+#database.drop_table()
 
 
 app = FastAPI()
 
 
-app.include_router(auth_router.router)
-app.include_router(audio_upload_router.router)
+app.include_router(auth_router.router, tags=["auth"])
+app.include_router(audio_router.router, tags=["audio"])
+app.include_router(users_router.router, tags=["user"])

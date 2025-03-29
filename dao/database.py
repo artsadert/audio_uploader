@@ -1,10 +1,10 @@
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
-from os import getenv
+from os import getenv, mkdir, path
 
-import loading_dotenv
-from models import models
+from dao import loading_dotenv
+from dao.models import models
 
 
 
@@ -13,19 +13,65 @@ loading_dotenv.load()
 engine = create_engine(str(getenv("PGLINK")))
 
 
-def create_user():
+def create_user(psuid: str, email: str | None, login: str, name: str | None, lname: str | None, sex: str | None):
+    user_id = None
     with Session(engine) as session:
+        user = models.User(id=psuid, email=email, login=login, name=name, lname=lname, sex=sex)
+        session.add(user)
 
+        session.commit()
+        user_id = user.id
+
+    if not user_id:
+        raise ValueError
+
+    return user_id
+
+
+def delete_user(psuid: str):
+    with Session(engine) as session:
+        session.query(models.User).filter(models.User.id == psuid).delete()
+        session.commit()
+
+
+def get_user_info(psuid: str):
+    user = None
+    with Session(engine) as session:
+        user = session.query(models.User).filter(models.User.id == psuid).first()
+
+    if not user:
+        raise ValueError
+
+    return user
+
+def update_user_info(id: str | None, email: str | None, login: str, name: str | None, lname: str | None, sex: str | None):
+    with Session(engine) as session:
+        stmt = select(models.User).where(models.User.id == id)
+        user = session.scalars(stmt).one()
+
+        user.email = email
+        user.login = login
+        user.name = name
+        user.lname = lname
+        user.sex = sex
 
         session.commit()
 
-def delete_user():
-    pass
 
-def create_image(filename: str, file: bytes, user_id: int):
+def check_is_user_existing(psuid: str):
+    user = None
+    with Session(engine) as session:
+        stmt = select(models.User).where(models.User.id == psuid)
+        user = session.scalars(stmt).one_or_none()
+
+    return user is not None
+
+
+
+def create_audio(filename: str, file: bytes, psuid: int):
     image_id = None
     with Session(engine) as session:
-        image = models.Image(filename=filename, user_id=user_id) 
+        image = models.Audio(filename=filename, user_id=psuid) 
         session.add(image)
 
         session.commit()
@@ -35,19 +81,32 @@ def create_image(filename: str, file: bytes, user_id: int):
         raise ValueError
 
 
+    if not path.isdir("./files"):
+        mkdir("./files")
     with open(f"./files/{image_id}", 'wb') as f:
         f.write(file)
 
-
-
-def get_all():
+def get_list_audio(psuid: str) -> list[dict[str, str]]:
+    tracks = []
     with Session(engine) as session:
-        stmt = select(models.User)
-        for user in session.scalars(stmt):
-            print(user)
-        stmt = select(models.Image)
-        for user in session.scalars(stmt):
-            print(user)
+        stmt = select(models.Audio).where(models.Audio.user_id == psuid)
+        for track in session.scalars(stmt):
+            tracks.append({"filename": track.filename, "filepath": track.url_link_id})
+
+    return tracks
+
+def is_super_user(psuid: str):
+    superuser = None
+    with Session(engine) as session:
+        stmt = select(models.SuperUsers).where(models.SuperUsers.user_id == psuid)
+        superuser = session.scalars(stmt).one_or_none()
+
+    return superuser is not None
+
+
+def update_table():
+    models.Base.metadata.drop_all(engine)
+    models.Base.metadata.create_all(engine)
 
 
 
@@ -55,6 +114,7 @@ def get_all():
 if __name__ == "__main__":
     models.Base.metadata.drop_all(engine)
     models.Base.metadata.create_all(engine)
+
     with Session(engine) as session:
         user = models.User(email="artsadert@gmail.com", login="art", name="arthur", lname="sad", sex="m")
         session.add(user)

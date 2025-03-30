@@ -1,7 +1,8 @@
+from fastapi import UploadFile
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
-from os import getenv, mkdir, path
+from os import getenv, mkdir, path, remove
 
 from dao import loading_dotenv
 from dao.models import models
@@ -13,7 +14,7 @@ loading_dotenv.load()
 engine = create_engine(str(getenv("PGLINK")))
 
 
-def create_user(id: int, email: str | None, login: str, name: str | None, lname: str | None, sex: str | None):
+async def create_user(id: int, email: str | None, login: str, name: str | None, lname: str | None, sex: str | None) -> int:
     user_id = None
     with Session(engine) as session:
         user = models.User(id=id, email=email, login=login, name=name, lname=lname, sex=sex)
@@ -28,13 +29,21 @@ def create_user(id: int, email: str | None, login: str, name: str | None, lname:
     return user_id
 
 
-def delete_user(id: int):
+async def delete_user(id: int):
+    tracks = await get_list_audio(id)
+    for track in tracks:
+        try:
+            remove(f"audios/{track['filepath']}")
+        except:
+            print(f"no such file: {track['filepath']}")
     with Session(engine) as session:
         session.query(models.User).filter(models.User.id == id).delete()
         session.commit()
 
 
-def get_user_info(id: int):
+
+
+async def get_user_info(id: int) -> models.User:
     user = None
     with Session(engine) as session:
         user = session.query(models.User).filter(models.User.id == id).first()
@@ -44,7 +53,8 @@ def get_user_info(id: int):
 
     return user
 
-def update_user_info(id: int | None, email: str | None, login: str, name: str | None, lname: str | None, sex: str | None):
+async def update_user_info(id: int | None, email: str | None, login: str, name: str | None, lname: str | None, sex: str | None) -> models.User:
+    user = None
     with Session(engine) as session:
         stmt = select(models.User).where(models.User.id == id)
         user = session.scalars(stmt).one()
@@ -57,8 +67,10 @@ def update_user_info(id: int | None, email: str | None, login: str, name: str | 
 
         session.commit()
 
+    return user
 
-def check_is_user_existing(id: int):
+
+async def check_is_user_existing(id: int) -> bool:
     user = None
     with Session(engine) as session:
         stmt = select(models.User).where(models.User.id == id)
@@ -68,7 +80,7 @@ def check_is_user_existing(id: int):
 
 
 
-def create_audio(filename: str, file: bytes, id: int):
+async def create_audio(filename: str, file: UploadFile, id: int) -> int:
     image_id = None
     with Session(engine) as session:
         image = models.Audio(filename=filename, user_id=id) 
@@ -81,12 +93,15 @@ def create_audio(filename: str, file: bytes, id: int):
         raise ValueError
 
 
-    if not path.isdir("./files"):
-        mkdir("./files")
-    with open(f"./files/{image_id}", 'wb') as f:
-        f.write(file)
+    if not path.isdir("./audios"):
+        mkdir("./audios")
+    with open(f"./audios/{image_id}", 'wb') as f:
+        content = await file.read()
+        f.write(content)
 
-def get_list_audio(id: int) -> list[dict[str, str]]:
+    return image_id
+
+async def get_list_audio(id: int) -> list[dict[str, str]]:
     tracks = []
     with Session(engine) as session:
         stmt = select(models.Audio).where(models.Audio.user_id == id)
@@ -95,7 +110,8 @@ def get_list_audio(id: int) -> list[dict[str, str]]:
 
     return tracks
 
-def is_super_user(id: int):
+
+async def is_super_user(id: int) -> bool:
     superuser = None
     with Session(engine) as session:
         stmt = select(models.SuperUsers).where(models.SuperUsers.user_id == id)

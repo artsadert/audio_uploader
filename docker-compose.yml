@@ -33,7 +33,7 @@ services:
     restart: unless-stopped
     env_file: ".env"
 
-  app:
+  app: 
     container_name: upload_audio_app
     build: .
     ports:

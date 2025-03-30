@@ -11,7 +11,7 @@ router = APIRouter()
 @router.post("/auth")
 async def create_user(oauth_token: Annotated[str, Header()]):
     result = await yandex_oauth.get_user_info(oauth_token)
-    database.create_user(int(result.id), result.default_email, result.login, result.first_name, result.last_name, result.sex)
+    await database.create_user(int(result.id), result.default_email, result.login, result.first_name, result.last_name, result.sex)
 
     return {"message": result}
 

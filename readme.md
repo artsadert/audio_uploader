@@ -30,5 +30,4 @@ sudo docker compose up -d
 
 - list of all user audiofiles superuser can see
 - delete account also can do owner of account
-- pub prefix for user if user wants to share his music
 - added pgadmin

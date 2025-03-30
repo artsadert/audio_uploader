@@ -16,7 +16,7 @@ def load():
         if getenv(required_var) == None:
             raise Exception(f"required variable is missing: {required_var}")
 
-    environ["PGLINK"] = f"postgresql+psycopg2://{getenv('POSTGRES_USER')}:{getenv('POSTGRES_PASSWORD')}@localhost/{getenv('POSTGRES_DB')}"
+    environ["PGLINK"] = f"postgresql+psycopg2://{getenv('POSTGRES_USER')}:{getenv('POSTGRES_PASSWORD')}@{getenv('POSTGRES_HOST')}/{getenv('POSTGRES_DB')}"
 
 if __name__ == "__main__":
     load()

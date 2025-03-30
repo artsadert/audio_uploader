@@ -105,21 +105,8 @@ def is_super_user(id: int):
 
 
 def update_table():
-    models.Base.metadata.drop_all(engine)
+    #models.Base.metadata.drop_all(engine)
     models.Base.metadata.create_all(engine)
 
 
-
-
-if __name__ == "__main__":
-    models.Base.metadata.drop_all(engine)
-    models.Base.metadata.create_all(engine)
-
-    with Session(engine) as session:
-        user = models.User(email="artsadert@gmail.com", login="art", name="arthur", lname="sad", sex="m")
-        session.add(user)
-        session.commit()
-
-    create_image("favsong.mp4", b'345345', 1)
-    get_all()
 

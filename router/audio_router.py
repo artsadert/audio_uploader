@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter, File, HTTPException, status
+from fastapi import APIRouter, File, HTTPException, status, Header
 import mimetypes
 
 from dao import database
@@ -10,7 +10,7 @@ router = APIRouter()
 
 
 @router.post("/audio")
-async def upload_track(file: Annotated[bytes | None, File()], filename: str, oauth_token: str):
+async def upload_track(file: Annotated[bytes | None, File()], filename: str, oauth_token: Annotated[str, Header()]):
     mime_type, _ = mimetypes.guess_type(filename)
     if mime_type is None or not mime_type.startswith('audio'):
         raise HTTPException(
@@ -34,7 +34,7 @@ async def upload_track(file: Annotated[bytes | None, File()], filename: str, oau
 
     
 @router.get("/audio/user")
-async def get_all_user_audio(id: int, oauth_token: str):
+async def get_all_user_audio(id: int, oauth_token: Annotated[str, Header()]):
     if not database.check_is_user_existing(id):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, status
+from typing import Annotated
+from fastapi import APIRouter, HTTPException, Header, status
 
 from dao import database
 from router.models.user import User
@@ -7,7 +8,7 @@ from yandex_oauth import yandex_oauth
 router = APIRouter()
 
 @router.delete("/user")
-async def delete_user(userid: int, oauth_token: str):
+async def delete_user(userid: int, oauth_token: Annotated[str, Header()]):
     result = await yandex_oauth.get_user_info(oauth_token)
     if not database.is_super_user(int(result.id)):
         raise HTTPException(
@@ -19,7 +20,7 @@ async def delete_user(userid: int, oauth_token: str):
     return {"message": "user is deleted"}
 
 @router.get("/user")
-async def get_user_info(id_to_get: int, oauth_token: str):
+async def get_user_info(id_to_get: int, oauth_token: Annotated[str, Header()]):
     if not database.check_is_user_existing(id_to_get):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -37,7 +38,7 @@ async def get_user_info(id_to_get: int, oauth_token: str):
     return database.get_user_info(id_to_get)
 
 @router.put("/user")
-async def update_user_info(user: User, oauth_token: str):
+async def update_user_info(user: User, oauth_token: Annotated[str, Header()]):
     if not database.check_is_user_existing(user.id):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

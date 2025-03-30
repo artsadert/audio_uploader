@@ -33,6 +33,20 @@ services:
     restart: unless-stopped
     env_file: ".env"
 
+  app:
+    container_name: upload_audio_app
+    build: .
+    ports:
+      - 8000:8000
+    depends_on:
+      - postgres
+    networks:
+      - postgres
+    volumes:
+      - ./files/:/data/files
+    env_file:
+      - "./.env"
+
 networks:
   postgres:
     driver: bridge

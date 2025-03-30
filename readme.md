@@ -2,26 +2,28 @@
 
 ## Required .env with params
 
-    ### Postgres
-      - POSTGRES_USER
-      - POSTGRES_PASSWORD
-      - POSTGRES_DB
-      - POSTGRES_HOST
+### Postgres
 
-    ### PGadmin
-      - PGADMIN_DEFAULT_EMAIL
-      - PGADMIN_DEFAULT_PASSWORD
+    - POSTGRES_USER
+    - POSTGRES_PASSWORD
+    - POSTGRES_DB
+    - POSTGRES_HOST
+
+### PGadmin
+
+    - PGADMIN_DEFAULT_EMAIL
+    - PGADMIN_DEFAULT_PASSWORD
     
-    ### Yandex Oauth
-      - client_id 
-      - client_secret
-      - client_redirect: (default "localhost:8000/login")
+### Yandex Oauth
+
+    - client_id 
+    - client_secret
+    - client_redirect: (default "localhost:8000/login")
 
 ## Start docker compose
 
-   ```console
-    sudo docker compose up -d
-    ```
+```console
+sudo docker compose up -d```
     
 
 # features:

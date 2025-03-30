@@ -15,6 +15,16 @@ engine = create_engine(str(getenv("PGLINK")))
 
 
 async def create_user(id: int, email: str | None, login: str, name: str | None, lname: str | None, sex: str | None) -> int:
+    """
+    Creates user account
+
+    - id: int
+    - email: str | None
+    - login: str
+    - name: str | None
+    - lname: str | None
+    - sex: str | None
+    """
     user_id = None
     with Session(engine) as session:
         user = models.User(id=id, email=email, login=login, name=name, lname=lname, sex=sex)
@@ -30,6 +40,11 @@ async def create_user(id: int, email: str | None, login: str, name: str | None, 
 
 
 async def delete_user(id: int):
+    """
+    Deletes user account
+
+    - id: int
+    """
     tracks = await get_list_audio(id)
     for track in tracks:
         try:
@@ -44,6 +59,11 @@ async def delete_user(id: int):
 
 
 async def get_user_info(id: int) -> models.User:
+    """
+    Gets all user account information
+
+    - id: int
+    """
     user = None
     with Session(engine) as session:
         user = session.query(models.User).filter(models.User.id == id).first()
@@ -53,17 +73,29 @@ async def get_user_info(id: int) -> models.User:
 
     return user
 
-async def update_user_info(id: int | None, email: str | None, login: str, name: str | None, lname: str | None, sex: str | None) -> models.User:
+async def update_user_info(id: int, login: str | None = None, email: str | None = None, name: str | None = None, lname: str | None = None, sex: str | None = None) -> models.User:
+    """
+    Updates information about user
+
+    - id: int
+    - email: str | None
+    - login: str | None
+    - name: str | None
+    - lname: str | None
+    - sex: str | None
+    """
+    previous_user = await get_user_info(id)
+
     user = None
     with Session(engine) as session:
         stmt = select(models.User).where(models.User.id == id)
         user = session.scalars(stmt).one()
 
-        user.email = email
-        user.login = login
-        user.name = name
-        user.lname = lname
-        user.sex = sex
+        user.email = email if email else previous_user.email        
+        user.login = login if login else previous_user.login
+        user.name = name if name else previous_user.name
+        user.lname = lname if lname else previous_user.lname
+        user.sex = sex if sex else previous_user.sex
 
         session.commit()
 
@@ -71,6 +103,11 @@ async def update_user_info(id: int | None, email: str | None, login: str, name: 
 
 
 async def check_is_user_existing(id: int) -> bool:
+    """
+    Checks is user existing
+
+    - id: int
+    """
     user = None
     with Session(engine) as session:
         stmt = select(models.User).where(models.User.id == id)
@@ -81,6 +118,13 @@ async def check_is_user_existing(id: int) -> bool:
 
 
 async def create_audio(filename: str, file: UploadFile, id: int) -> int:
+    """
+    Create audio file and link to user account
+
+    - filename: str
+    - file: UploadFile
+    - id: int
+    """
     image_id = None
     with Session(engine) as session:
         image = models.Audio(filename=filename, user_id=id) 
@@ -102,6 +146,11 @@ async def create_audio(filename: str, file: UploadFile, id: int) -> int:
     return image_id
 
 async def get_list_audio(id: int) -> list[dict[str, str]]:
+    """
+    Gets list of all user's audiofiles
+
+    - id: int
+    """
     tracks = []
     with Session(engine) as session:
         stmt = select(models.Audio).where(models.Audio.user_id == id)
@@ -121,7 +170,9 @@ async def is_super_user(id: int) -> bool:
 
 
 def update_table():
-    #models.Base.metadata.drop_all(engine)
+    """
+    Creates database
+    """
     models.Base.metadata.create_all(engine)
 
 

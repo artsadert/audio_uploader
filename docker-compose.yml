@@ -43,7 +43,7 @@ services:
     networks:
       - postgres
     volumes:
-      - ./files/:/data/files
+      - ./audios/:/data/audios
     env_file:
       - "./.env"
 
